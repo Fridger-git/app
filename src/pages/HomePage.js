@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { Icon, Button, SearchBar } from "@rneui/themed";
+import { Keyboard, ScrollView, Text } from "react-native";
+import TaskInput from "../components/TaskInput";
+import TaskItem from "../components/TaskItem";
 
 const styles = StyleSheet.create({
   container: {
@@ -18,6 +21,18 @@ const HomePage = () => {
     setSearch(search);
   };
 
+  const [tasks, setTasks] = useState([]);
+
+  const addTask = (task) => {
+    if (task == null) return;
+    setTasks([...tasks, task]);
+    Keyboard.dismiss();
+  };
+
+  const deleteTask = (deleteIndex) => {
+    setTasks(tasks.filter((value, index) => index != deleteIndex));
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.forAnd}>
@@ -27,7 +42,21 @@ const HomePage = () => {
           onChangeText={updateSearch}
           value={search}
         />
+        <ScrollView style={styles.scrollView}>
+          {tasks.map((task, index) => {
+            return (
+              <View key={index} style={styles.taskContainer}>
+                <TaskItem
+                  index={index + 1}
+                  task={task}
+                  deleteTask={() => deleteTask(index)}
+                />
+              </View>
+            );
+          })}
+        </ScrollView>
       </View>
+      <TaskInputField addTask={addTask} />
     </View>
   );
 };
