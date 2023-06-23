@@ -12,6 +12,20 @@ const styles = StyleSheet.create({
   forAnd: {
     top: Platform.OS === "android" ? 30 : 0,
   },
+  heading: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "600",
+    marginTop: 30,
+    marginBottom: 10,
+    marginLeft: 20,
+  },
+  scrollView: {
+    marginBottom: 70,
+  },
+  taskContainer: {
+    marginTop: 20,
+  },
 });
 
 const HomePage = () => {
