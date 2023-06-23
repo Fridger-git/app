@@ -10,7 +10,7 @@ import { Icon, Button, SearchBar } from "@rneui/themed";
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     justifyContent: "flex-end",
     alignItems: "flex-end",
     marginBottom: 10,
@@ -32,22 +32,22 @@ const MainLayout = ({ children }) => {
     <View style={styles.container}>
       <View style={styles.btns}>
         <Button type="Clear">
-          <Icon name="save" color="green" />
+          <Icon name="save" color="#7CA982" />
         </Button>
       </View>
       <View style={styles.btns}>
         <Button type="Clear">
-          <Icon name="shopping-basket" color="green" />
+          <Icon name="shopping-basket" color="#7CA982" />
         </Button>
       </View>
       <View style={styles.btns}>
         <Button type="Clear">
-          <Icon name="fastfood" color="green" />
+          <Icon name="fastfood" color="#7CA982" />
         </Button>
       </View>
       <View style={styles.btns}>
         <Button type="Clear">
-          <Icon name="home" color="green" />
+          <Icon name="home" color="#7CA982" />
         </Button>
       </View>
     </View>

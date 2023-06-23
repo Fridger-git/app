@@ -31,15 +31,21 @@ const styles = StyleSheet.create({
 const HomePage = () => {
   const [search, setSearch] = useState("");
 
-  const updateSearch = (search) => {
-    setSearch(search);
+  const updateSearch = (newSearch) => {
+    setSearch(newSearch);
   };
 
   const [tasks, setTasks] = useState([]);
 
-  const addTask = (task) => {
-    if (task == null) return;
-    setTasks([...tasks, task]);
+  // const addTask = (task) => {
+  //   if (task == null) return;
+  //   setTasks([...tasks, task]);
+  //   Keyboard.dismiss();
+  // };
+
+  const addTask = (newTask) => {
+    if (newTask.task == null || newTask.category == null) return;
+    setTasks([...tasks, newTask]);
     Keyboard.dismiss();
   };
 
@@ -70,7 +76,7 @@ const HomePage = () => {
           })}
         </ScrollView>
       </View>
-      <TaskInputField addTask={addTask} />
+      <TaskInput addTask={addTask} />
     </View>
   );
 };
