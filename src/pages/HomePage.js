@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
-import { Icon, Button, SearchBar } from "@rneui/themed";
+import { SearchBar } from "@rneui/themed";
 import { Keyboard, ScrollView, Text } from "react-native";
 import TaskInput from "../components/TaskInput";
 import TaskItem from "../components/TaskItem";
