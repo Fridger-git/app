@@ -11,6 +11,9 @@ const styles = StyleSheet.create({
   },
   forAnd: {
     top: Platform.OS === "android" ? 30 : 0,
+    "&:first-child": {
+      backgroundColor: "red",
+    },
   },
   heading: {
     color: "#fff",
@@ -57,7 +60,7 @@ const HomePage = () => {
     <View style={styles.container}>
       <View style={styles.forAnd}>
         <SearchBar
-          platform="ios"
+          // platform="ios"
           placeholder="Type Here..."
           onChangeText={updateSearch}
           value={search}

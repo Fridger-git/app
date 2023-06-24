@@ -12,7 +12,7 @@ import { Picker } from "@react-native-picker/picker";
 
 const styles = StyleSheet.create({
   container: {
-    borderColor: "#fff",
+    // borderColor: "#fff",
     backgroundColor: "#7CA982",
     borderWidth: 1,
     marginHorizontal: 20,
@@ -25,14 +25,15 @@ const styles = StyleSheet.create({
     bottom: 10,
   },
   inputField: {
-    color: "#fff",
-    height: 50,
-    flex: 1,
+    // color: "#fff",
+    // height: 50,
+    maxHeight: 50,
+    // flex: 1,
   },
   categoryPicker: {
     flex: 1,
-    marginLeft: 10,
-    color: "#fff",
+    // marginLeft: 10,
+    // color: "#fff",
   },
   button: {
     height: 30,
@@ -69,21 +70,24 @@ const TaskInput = (props) => {
         onChangeText={setTask}
         placeholder="Write here"
       />
+
+      <TouchableOpacity onPress={handleAddTask}>
+        {/* <View style={styles.button}> */}
+        <View>
+          <MaterialIcons name="add" size={24} color="black" />
+        </View>
+      </TouchableOpacity>
       <Picker
         style={styles.categoryPicker}
         selectedValue={category}
         onValueChange={setCategory}
       >
         <Picker.Item label="Select a category" value="" />
-        <Picker.Item label="Category 1" value="category1" />
-        <Picker.Item label="Category 2" value="category2" />
-        <Picker.Item label="Category 3" value="category3S" />
+        <Picker.Item label="Apple" value="Apple" />
+        <Picker.Item label="Banana" value="Banana" />
+        <Picker.Item label="Cherry" value="Cherry" />
+        <Picker.Item label="Milk" value="Milk" />
       </Picker>
-      <TouchableOpacity onPress={handleAddTask}>
-        <View style={styles.button}>
-          <MaterialIcons name="keyboard-arrow-up" size={24} color="black" />
-        </View>
-      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };

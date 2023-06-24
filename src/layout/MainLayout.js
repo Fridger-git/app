@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import {
-  StyleSheet,
-  View,
-  SafeAreaView,
-  DrawerLayoutAndroid,
-} from "react-native";
-import { Icon, Button, SearchBar } from "@rneui/themed";
+import { StyleSheet, View, SafeAreaView } from "react-native";
+import { Icon, Button } from "@rneui/themed";
 
 const styles = StyleSheet.create({
   container: {
@@ -18,6 +13,9 @@ const styles = StyleSheet.create({
   },
   btns: {
     flex: 1,
+    // backgroundColor: "#2d2d30",
+    backgroundColor: "#000000",
+    textColor: "#ffffff",
   },
 });
 
@@ -56,7 +54,7 @@ const MainLayout = ({ children }) => {
     <SafeAreaView style={styles.btns}>
       {children}
       <SafeAreaView style={styles.container}>
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
         {NavMenu}
       </SafeAreaView>
     </SafeAreaView>
