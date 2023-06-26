@@ -40,12 +40,6 @@ const HomePage = () => {
 
   const [tasks, setTasks] = useState([]);
 
-  // const addTask = (task) => {
-  //   if (task == null) return;
-  //   setTasks([...tasks, task]);
-  //   Keyboard.dismiss();
-  // };
-
   const addTask = (newTask) => {
     if (newTask.task == null || newTask.category == null) return;
     setTasks([...tasks, newTask]);

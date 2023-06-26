@@ -50,6 +50,7 @@ const MainLayout = ({ children }) => {
       </View>
     </View>
   );
+
   return (
     <SafeAreaView style={styles.btns}>
       {children}

@@ -1,20 +1,41 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Icon } from "@rneui/themed";
 import BarcodeScannerPage from "./src/pages/BarcodeScannerPage";
 import SearchBarcode from "./src/pages/SearchBarcode";
 import BarcodeScannerProvider from "./src/components/BarcodeScannerContext";
+import HomePage from "./src/pages/HomePage";
 
-const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
 const App = () => {
   return (
     <BarcodeScannerProvider>
       <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name="BarcodeScanner" component={BarcodeScannerPage} />
-          <Stack.Screen name="SearchBarcode" component={SearchBarcode} />
-        </Stack.Navigator>
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ color, size }) => {
+              let iconName;
+
+              if (route.name === "Home") {
+                iconName = "home";
+              } else if (route.name === "Scanner") {
+                iconName = "camera";
+              } else if (route.name === "SearchBarcode") {
+                iconName = "search";
+              }
+
+              return <Icon name={iconName} color={color} />;
+            },
+            tabBarActiveTintColor: "#7CA982",
+            tabBarInactiveTintColor: "gray",
+          })}
+        >
+          {/* <Tab.Screen name="Home" component={HomePage} /> */}
+          <Tab.Screen name="SearchBarcode" component={SearchBarcode} />
+          <Tab.Screen name="Scanner" component={BarcodeScannerPage} />
+        </Tab.Navigator>
       </NavigationContainer>
     </BarcodeScannerProvider>
   );

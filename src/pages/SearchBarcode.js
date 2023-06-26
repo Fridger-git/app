@@ -1,77 +1,131 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
   TextInput,
-  Button,
-  FlatList,
   Image,
+  FlatList,
   StyleSheet,
 } from "react-native";
+import { BarCodeScanner } from "expo-barcode-scanner";
 import axios from "axios";
 import { BarcodeScannerContext } from "../components/BarcodeScannerContext";
 
-const SearchBarcode = () => {
-  const { scannedBarcode, setScannedBarcode } = useContext(
-    BarcodeScannerContext
-  );
+const SearchBarcode = ({ navigation }) => {
+  const { scannedBarcode } = useContext(BarcodeScannerContext);
   const [barcode, setBarcode] = useState(scannedBarcode || "");
+  const [productName, setProductName] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [productImage, setProductImage] = useState(null);
 
   useEffect(() => {
-    if (scannedBarcode) {
-      setBarcode(scannedBarcode); // Установка значения штрихкода из контекста
-      setScannedBarcode(null); // Сброс значения штрихкода в контексте
-      handleSearch();
-    }
+    setBarcode(scannedBarcode || "");
   }, [scannedBarcode]);
 
-  const handleSearch = () => {
-    const API_URL = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
-
-    axios
-      .get(API_URL)
-      .then((response) => {
-        const productData = response.data;
-        const productImageUrl = productData?.product?.image_url;
-
-        setProductImage(productImageUrl);
-        setSearchResults([productData]);
-      })
-      .catch((error) => {
-        console.error("Error fetching product data:", error);
-        setSearchResults([]);
-      });
+  const handleBarcodeChange = (text) => {
+    setBarcode(text.trim()); // Удаляем лишние пробелы и сохраняем значение
   };
+
+  const handleProductNameChange = (text) => {
+    setProductName(text);
+  };
+
+  const handleSearchByBarcode = async () => {
+    try {
+      if (!barcode) {
+        // Если код пуст, очищаем результаты поиска и выходим из функции
+        setSearchResults([]);
+        setProductImage(null);
+        setProductName("");
+        return;
+      }
+
+      const response = await axios.get(
+        `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
+      );
+      const { product } = response.data;
+
+      if (product) {
+        setSearchResults([product]);
+        setProductImage(product?.image_url);
+        setProductName(product?.product_name);
+      } else {
+        // Если свойство product отсутствует, очищаем результаты поиска
+        setSearchResults([]);
+        setProductImage(null);
+        setProductName("");
+      }
+    } catch (error) {
+      console.error(error);
+      setSearchResults([]);
+      setProductImage(null);
+      setProductName("");
+    }
+  };
+
+  const handleSearchByProductName = async () => {
+    try {
+      const response = await axios.get(
+        `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${productName}&search_simple=1&action=process&json=1`
+      );
+      const { products } = response.data;
+      setSearchResults(products);
+      if (products.length > 0) {
+        setProductImage(products[0]?.image_url);
+        setBarcode(products[0]?.code);
+      } else {
+        setProductImage(null);
+        setBarcode("");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (barcode) {
+      await handleSearchByBarcode();
+    } else if (productName) {
+      await handleSearchByProductName();
+    }
+  };
+
+  useEffect(() => {
+    handleSearch(); // Вызываем handleSearch при изменении значения barcode
+  }, [barcode]);
 
   return (
     <View style={styles.container}>
-      <View style={styles.forAnd}>
-        <Text style={{ color: "yellow" }}>Поиск по номеру штрихкода</Text>
-        <View>
-          <TextInput
-            style={{ marginTop: 30, marginBottom: 30 }}
-            placeholder="Введите текст"
-            value={barcode}
-            onChangeText={setBarcode}
-            onSubmitEditing={handleSearch}
-            returnKeyType="search"
-          />
-          <Button title="Search" onPress={handleSearch} />
-        </View>
+      <TextInput
+        style={styles.input}
+        placeholder="Введите номер штрихкода"
+        value={barcode}
+        onChangeText={handleBarcodeChange}
+        onSubmitEditing={handleSearch}
+        returnKeyType="search" // Добавлено для отображения кнопки "ввод" на клавиатуре
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Введите название продукта"
+        value={productName}
+        onChangeText={handleProductNameChange}
+        onSubmitEditing={handleSearch}
+      />
+      <View style={styles.resultContainer}>
         {productImage && (
-          <Image
-            source={{ uri: productImage }}
-            style={{ width: 100, height: 100 }}
-          />
+          <Image source={{ uri: productImage }} style={styles.productImage} />
         )}
-        <FlatList
-          data={searchResults}
-          renderItem={({ item }) => (
-            <Text key={item?.product?.code}>{item?.product?.product_name}</Text>
-          )}
-        />
+        {searchResults.length > 0 ? (
+          <FlatList
+            data={searchResults}
+            renderItem={({ item }) => (
+              <Text key={item.code}>{item.product_name}</Text>
+            )}
+          />
+        ) : (
+          <Text>Ничего не найдено</Text>
+        )}
       </View>
     </View>
   );
@@ -80,26 +134,24 @@ const SearchBarcode = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
   },
-  forAnd: {
-    top: Platform.OS === "android" ? 30 : 0,
-    "&:first-child": {
-      backgroundColor: "red",
-    },
+  input: {
+    height: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    marginBottom: 8,
+    paddingHorizontal: 8,
   },
-  heading: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 30,
-    marginBottom: 10,
-    marginLeft: 20,
+  resultContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  scrollView: {
-    marginBottom: 70,
-  },
-  taskContainer: {
-    marginTop: 20,
+  productImage: {
+    width: 200,
+    height: 200,
+    marginBottom: 16,
   },
 });
 
