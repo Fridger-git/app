@@ -6,10 +6,12 @@ import {
   Image,
   FlatList,
   StyleSheet,
+  TouchableOpacity,
 } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import axios from "axios";
 import { BarcodeScannerContext } from "../components/BarcodeScannerContext";
+import FavoriteIcon from "../components/FavoriteIcon";
 
 const SearchBarcode = ({ navigation }) => {
   const { scannedBarcode } = useContext(BarcodeScannerContext);
@@ -17,26 +19,29 @@ const SearchBarcode = ({ navigation }) => {
   const [productName, setProductName] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [productImage, setProductImage] = useState(null);
+  const [selectedProductCode, setSelectedProductCode] = useState("");
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     setBarcode(scannedBarcode || "");
   }, [scannedBarcode]);
 
   const handleBarcodeChange = (text) => {
-    setBarcode(text.trim()); // Удаляем лишние пробелы и сохраняем значение
+    setBarcode(text.trim());
   };
 
   const handleProductNameChange = (text) => {
     setProductName(text);
+    setBarcode("");
   };
 
   const handleSearchByBarcode = async () => {
     try {
       if (!barcode) {
-        // Если код пуст, очищаем результаты поиска и выходим из функции
         setSearchResults([]);
         setProductImage(null);
         setProductName("");
+        setSelectedProductCode("");
         return;
       }
 
@@ -49,17 +54,19 @@ const SearchBarcode = ({ navigation }) => {
         setSearchResults([product]);
         setProductImage(product?.image_url);
         setProductName(product?.product_name);
+        setSelectedProductCode(product?.code);
       } else {
-        // Если свойство product отсутствует, очищаем результаты поиска
         setSearchResults([]);
         setProductImage(null);
         setProductName("");
+        setSelectedProductCode("");
       }
     } catch (error) {
       console.error(error);
       setSearchResults([]);
       setProductImage(null);
       setProductName("");
+      setSelectedProductCode("");
     }
   };
 
@@ -72,10 +79,11 @@ const SearchBarcode = ({ navigation }) => {
       setSearchResults(products);
       if (products.length > 0) {
         setProductImage(products[0]?.image_url);
-        setBarcode(products[0]?.code);
+        setBarcode("");
+        setSelectedProductCode(products[0]?.code);
       } else {
         setProductImage(null);
-        setBarcode("");
+        setSelectedProductCode("");
       }
     } catch (error) {
       console.error(error);
@@ -91,8 +99,14 @@ const SearchBarcode = ({ navigation }) => {
   };
 
   useEffect(() => {
-    handleSearch(); // Вызываем handleSearch при изменении значения barcode
+    handleSearch();
   }, [barcode]);
+
+  const handleResultSelection = (selectedProductName, selectedProductCode) => {
+    setProductName(selectedProductName);
+    setSelectedProductCode(selectedProductCode);
+    handleSearch();
+  };
 
   return (
     <View style={styles.container}>
@@ -102,7 +116,7 @@ const SearchBarcode = ({ navigation }) => {
         value={barcode}
         onChangeText={handleBarcodeChange}
         onSubmitEditing={handleSearch}
-        returnKeyType="search" // Добавлено для отображения кнопки "ввод" на клавиатуре
+        returnKeyType="search"
       />
 
       <TextInput
@@ -112,15 +126,39 @@ const SearchBarcode = ({ navigation }) => {
         onChangeText={handleProductNameChange}
         onSubmitEditing={handleSearch}
       />
+
       <View style={styles.resultContainer}>
         {productImage && (
           <Image source={{ uri: productImage }} style={styles.productImage} />
         )}
+
+        {selectedProductCode ? (
+          <Text style={styles.productCode}>{selectedProductCode}</Text>
+        ) : null}
+
         {searchResults.length > 0 ? (
+          // <FlatList
+          //   data={searchResults}
+          //   renderItem={({ item }) => (
+          //     <TouchableOpacity
+          //       onPress={() =>
+          //         handleResultSelection(item.product_name, item.code)
+          //       }
+          //     >
+          //       <Text key={item.code}>{item.product_name}</Text>
+          //     </TouchableOpacity>
+          //   )}
+          // />
           <FlatList
             data={searchResults}
             renderItem={({ item }) => (
-              <Text key={item.code}>{item.product_name}</Text>
+              <View style={styles.resultItem}>
+                <Text>{item.product_name}</Text>
+                <FavoriteIcon
+                  isFavorite={isFavorite}
+                  onPress={() => setIsFavorite(!isFavorite)}
+                />
+              </View>
             )}
           />
         ) : (
@@ -140,18 +178,25 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: "gray",
     borderWidth: 1,
-    marginBottom: 8,
+    marginBottom: 12,
     paddingHorizontal: 8,
   },
   resultContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    marginTop: 16,
   },
   productImage: {
-    width: 200,
-    height: 200,
-    marginBottom: 16,
+    width: 100,
+    height: 100,
+    marginBottom: 8,
+  },
+  productCode: {
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  resultItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
   },
 });
 
