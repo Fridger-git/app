@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { StyleSheet, View, Text, Button } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
-import { useNavigation } from "@react-navigation/native"; // Используем useNavigation из react-navigation/native
+import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
+import { BarcodeScannerContext } from "../components/BarcodeScannerContext";
 
 const BarcodeScannerPage = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
-  const [productResult, setProductResult] = useState(null);
+  const { setScannedBarcode } = useContext(BarcodeScannerContext);
 
-  const navigation = useNavigation(); // Используем useNavigation вместо useNavigate
+  const navigation = useNavigation();
 
   useEffect(() => {
     (async () => {
@@ -20,21 +21,8 @@ const BarcodeScannerPage = () => {
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
-    getProductData(data);
-  };
-
-  const getProductData = (barcode) => {
-    const API_URL = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
-
-    axios
-      .get(API_URL)
-      .then((response) => {
-        const productData = response.data;
-        navigation.navigate("SearchBarcode", { productResult: productData }); // Передача данных о продукте при переходе на страницу "SearchBarcode"
-      })
-      .catch((error) => {
-        console.error("Error fetching product data:", error);
-      });
+    setScannedBarcode(data); // Сохранение значения штрихкода в контексте
+    navigation.navigate("SearchBarcode"); // Переход на страницу "SearchBarcode"
   };
 
   const handleContinue = () => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -9,15 +9,26 @@ import {
   StyleSheet,
 } from "react-native";
 import axios from "axios";
+import { BarcodeScannerContext } from "../components/BarcodeScannerContext";
 
 const SearchBarcode = () => {
-  const [barcode, setBarcode] = useState("");
+  const { scannedBarcode, setScannedBarcode } = useContext(
+    BarcodeScannerContext
+  );
+  const [barcode, setBarcode] = useState(scannedBarcode || "");
   const [searchResults, setSearchResults] = useState([]);
   const [productImage, setProductImage] = useState(null);
 
+  useEffect(() => {
+    if (scannedBarcode) {
+      setBarcode(scannedBarcode); // Установка значения штрихкода из контекста
+      setScannedBarcode(null); // Сброс значения штрихкода в контексте
+      handleSearch();
+    }
+  }, [scannedBarcode]);
+
   const handleSearch = () => {
-    const API_URL =
-      "https://world.openfoodfacts.org/api/v0/product/" + barcode + ".json";
+    const API_URL = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
 
     axios
       .get(API_URL)
@@ -39,26 +50,13 @@ const SearchBarcode = () => {
       <View style={styles.forAnd}>
         <Text style={{ color: "yellow" }}>Поиск по номеру штрихкода</Text>
         <View>
-          {/* <TextInput
-            style={{ marginTop: 30, marginBottom: 30 }}
-            value={barcode}
-            onChangeText={setBarcode}
-            placeholder="Barcode Number"
-            // keyboardType="numeric"
-          /> */}
-          {/* <SearchBar
-            // platform="ios"
-            placeholder="Type Here..."
-            onChangeText={setBarcode}
-            value={barcode}
-          /> */}
           <TextInput
             style={{ marginTop: 30, marginBottom: 30 }}
             placeholder="Введите текст"
             value={barcode}
             onChangeText={setBarcode}
-            onSubmitEditing={handleSearch} // Обработчик события "ввод"
-            returnKeyType="search" // Опция клавиши "ввод"
+            onSubmitEditing={handleSearch}
+            returnKeyType="search"
           />
           <Button title="Search" onPress={handleSearch} />
         </View>
@@ -70,8 +68,9 @@ const SearchBarcode = () => {
         )}
         <FlatList
           data={searchResults}
-          renderItem={({ item }) => <Text>{item?.product?.product_name}</Text>}
-          keyExtractor={(item) => item?.product?.code}
+          renderItem={({ item }) => (
+            <Text key={item?.product?.code}>{item?.product?.product_name}</Text>
+          )}
         />
       </View>
     </View>
