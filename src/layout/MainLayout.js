@@ -13,8 +13,8 @@ const styles = StyleSheet.create({
   },
   btns: {
     flex: 1,
-    // backgroundColor: "#2d2d30",
-    backgroundColor: "#000000",
+    backgroundColor: "#2d2d30",
+    // backgroundColor: "#000000",
     textColor: "#ffffff",
   },
 });
