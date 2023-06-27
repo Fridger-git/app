@@ -12,6 +12,7 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 import axios from "axios";
 import { BarcodeScannerContext } from "../components/BarcodeScannerContext";
 import FavoriteIcon from "../components/FavoriteIcon";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SearchBarcode = ({ navigation }) => {
   const { scannedBarcode } = useContext(BarcodeScannerContext);
@@ -21,6 +22,8 @@ const SearchBarcode = ({ navigation }) => {
   const [productImage, setProductImage] = useState(null);
   const [selectedProductCode, setSelectedProductCode] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     setBarcode(scannedBarcode || "");
@@ -51,7 +54,11 @@ const SearchBarcode = ({ navigation }) => {
       const { product } = response.data;
 
       if (product) {
-        setSearchResults([product]);
+        const updatedSearchResults = [product].map((item) => ({
+          ...item,
+          isFavorite: false,
+        }));
+        setSearchResults(updatedSearchResults);
         setProductImage(product?.image_url);
         setProductName(product?.product_name);
         setSelectedProductCode(product?.code);
@@ -76,7 +83,11 @@ const SearchBarcode = ({ navigation }) => {
         `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${productName}&search_simple=1&action=process&json=1`
       );
       const { products } = response.data;
-      setSearchResults(products);
+      const updatedSearchResults = products.map((item) => ({
+        ...item,
+        isFavorite: false,
+      }));
+      setSearchResults(updatedSearchResults);
       if (products.length > 0) {
         setProductImage(products[0]?.image_url);
         setBarcode("");
@@ -102,10 +113,46 @@ const SearchBarcode = ({ navigation }) => {
     handleSearch();
   }, [barcode]);
 
-  const handleResultSelection = (selectedProductName, selectedProductCode) => {
-    setProductName(selectedProductName);
-    setSelectedProductCode(selectedProductCode);
+  const handleResultSelection = (selectedProduct) => {
+    setProductName(selectedProduct.product_name);
+    setSelectedProduct(selectedProduct);
     handleSearch();
+  };
+
+  const toggleFavorite = async (selectedProduct) => {
+    try {
+      if (selectedProduct && selectedProduct.code) {
+        const isFavorite = favorites.some(
+          (product) => product.code === selectedProduct.code
+        );
+
+        let updatedFavorites = [];
+        if (isFavorite) {
+          updatedFavorites = favorites.filter(
+            (product) => product.code !== selectedProduct.code
+          );
+        } else {
+          updatedFavorites = [...favorites, selectedProduct];
+        }
+
+        // Обновляем значение isFavorite у выбранного продукта
+        const updatedSearchResults = searchResults.map((item) => ({
+          ...item,
+          isFavorite:
+            item.code === selectedProduct.code ? !isFavorite : item.isFavorite,
+        }));
+
+        setSearchResults(updatedSearchResults);
+        setFavorites(updatedFavorites);
+
+        await AsyncStorage.setItem(
+          "favorites",
+          JSON.stringify(updatedFavorites)
+        );
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -127,6 +174,10 @@ const SearchBarcode = ({ navigation }) => {
         onSubmitEditing={handleSearch}
       />
 
+      <TouchableOpacity onPress={() => navigation.navigate("Favorites")}>
+        <Text>Перейти к избранным продуктам</Text>
+      </TouchableOpacity>
+
       <View style={styles.resultContainer}>
         {productImage && (
           <Image source={{ uri: productImage }} style={styles.productImage} />
@@ -137,28 +188,16 @@ const SearchBarcode = ({ navigation }) => {
         ) : null}
 
         {searchResults.length > 0 ? (
-          // <FlatList
-          //   data={searchResults}
-          //   renderItem={({ item }) => (
-          //     <TouchableOpacity
-          //       onPress={() =>
-          //         handleResultSelection(item.product_name, item.code)
-          //       }
-          //     >
-          //       <Text key={item.code}>{item.product_name}</Text>
-          //     </TouchableOpacity>
-          //   )}
-          // />
           <FlatList
             data={searchResults}
             renderItem={({ item }) => (
-              <View style={styles.resultItem}>
-                <Text>{item.product_name}</Text>
+              <TouchableOpacity onPress={() => handleResultSelection(item)}>
+                <Text key={item.code}>{item.product_name}</Text>
                 <FavoriteIcon
-                  isFavorite={isFavorite}
-                  onPress={() => setIsFavorite(!isFavorite)}
+                  isFavorite={item.isFavorite}
+                  onPress={() => toggleFavorite(item)}
                 />
-              </View>
+              </TouchableOpacity>
             )}
           />
         ) : (
@@ -191,11 +230,6 @@ const styles = StyleSheet.create({
   },
   productCode: {
     fontWeight: "bold",
-    marginBottom: 8,
-  },
-  resultItem: {
-    flexDirection: "row",
-    alignItems: "center",
     marginBottom: 8,
   },
 });

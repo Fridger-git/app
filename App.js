@@ -6,6 +6,7 @@ import BarcodeScannerPage from "./src/pages/BarcodeScannerPage";
 import SearchBarcode from "./src/pages/SearchBarcode";
 import BarcodeScannerProvider from "./src/components/BarcodeScannerContext";
 import HomePage from "./src/pages/HomePage";
+import FavoritesScreen from "./src/components/FavoritesScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -35,6 +36,7 @@ const App = () => {
           {/* <Tab.Screen name="Home" component={HomePage} /> */}
           <Tab.Screen name="SearchBarcode" component={SearchBarcode} />
           <Tab.Screen name="Scanner" component={BarcodeScannerPage} />
+          <Tab.Screen name="Favorites" component={FavoritesScreen} />
         </Tab.Navigator>
       </NavigationContainer>
     </BarcodeScannerProvider>

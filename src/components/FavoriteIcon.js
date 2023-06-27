@@ -1,14 +1,11 @@
 import React from "react";
-import { TouchableOpacity, Image, StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet } from "react-native";
+import { Icon } from "@rneui/themed";
 
 const FavoriteIcon = ({ isFavorite, onPress }) => {
-  const iconImage = isFavorite
-    ? require("../../assets/favicon.png")
-    : require("");
-
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>
-      <Image source={iconImage} style={styles.icon} />
+      <Icon name={isFavorite ? "star" : "star-outline"} style={styles.icon} />
     </TouchableOpacity>
   );
 };
@@ -19,8 +16,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   icon: {
-    width: 24,
-    height: 24,
+    fontSize: 24,
   },
 });
 
